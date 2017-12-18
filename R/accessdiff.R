@@ -41,3 +41,31 @@ compute_accessdiff <- function(difference_tiff, weight_tiff = NULL){
 
 
 }
+
+#' Compute nth percentile accessibility
+#'
+#' Computes the number of opportunities accessible to an arbitrary percentile of
+#' the population.
+#'
+#' @param tiff A Conveyal tiff with accessibility scores.
+#' @inheritParams compute_accessdiff
+#' @inheritDotParams Hmisc::wtd.quantile
+#'
+#' @details Serves as a wrapper to \link[Hmisc]{wtd.quantile}
+#'
+#' @return A named vector of quantile values
+#
+#' @export
+#'
+compute_pctacces <- function(tiff, weight_tiff = NULL, ...){
+
+  values <- getValues(tiff)
+  if(is.null(weight_tiff)){
+    weights <- rep(1, length(values))
+  } else {
+    weights <- getValues(weight_tiff)
+  }
+  Hmisc::wtd.quantile(x = values, weights = weights, ...)
+}
+
+
