@@ -29,18 +29,44 @@ compute_accessdiff <- function(difference_tiff, weight_tiff = NULL){
 
   # keep only positive accessibility changes
   positivevalues <- values[values > 0]
-
-  if(is.null(weight_tiff)){
-    weights <- rep(1, length(positivevalues))
-  } else {
-    weights <- raster::getValues(weight_tiff)
-    weights <- weights[values > 0]
-  }
-
+  weights <- get_tweights(weight_tiff)[values > 0]
   stats::weighted.mean(positivevalues, weights)
 
+}
+
+
+#' Get weights from a tiff
+#'
+#' @inheritParams compute_accessdiff
+#'
+#'
+get_tweights <- function(weight_tiff = NULL){
+
+  if(is.null(weight_tiff)){
+    weights <- rep(1, length(values))
+  } else {
+    weights <- raster::getValues(weight_tiff)
+  }
+
+  return(weights)
 
 }
+
+
+access_histogram <- function(x, y, weight_tiff = NULL){
+
+  df <- data_frame(
+    cobb = raster::getValues(x),
+    base = raster::getValues(y),
+    weight = get_tweights(weight_tiff)
+  ) %>%
+    mutate(access = cobb - base)
+
+
+  ggplot(df, aes(x = access, weight = weight/ sum(weight))) +
+    geom_density()
+}
+
 
 #' Compute nth percentile accessibility
 #'
@@ -57,15 +83,45 @@ compute_accessdiff <- function(difference_tiff, weight_tiff = NULL){
 #
 #' @export
 #'
-compute_pctacces <- function(tiff, weight_tiff = NULL, ...){
+compute_pctaccess <- function(tiff, weight_tiff = NULL, ...){
 
-  values <- getValues(tiff)
-  if(is.null(weight_tiff)){
-    weights <- rep(1, length(values))
-  } else {
-    weights <- getValues(weight_tiff)
-  }
+  values <- raster::getValues(tiff)
+  weights <- get_tweights(tiff)
+
   Hmisc::wtd.quantile(x = values, weights = weights, ...)
 }
 
+#' Compute the Gini coefficient for a raster
+#'
+#' @inheritParams  compute_pctaccess
+#' @inheritDotParams ineq::ineq
+#'
+#' @details
+#' The [Gini coefficient](https://en.wikipedia.org/wiki/Gini_coefficient)
+#' is a measure of inequality usually applied to income. In the case of transit
+#' accessibility, Gini values closer to 1 imply that some areas have
+#' high-quality access while most have none. This serves as a wrapper to \link[ineq][ineq]
+#'
+#' @importFrom ineq ineq
+#' @importFrom raster getValues
+#'
+#'
+gini_access <- function(tiff, weight_tiff = NULL, ...){
 
+  values <- raster::getValues(tiff)
+  weights <- get_tweights(weight_tiff)
+
+  x <- values * weights
+
+  if(!hasArg(type)){
+    type <- "Gini"
+  }
+
+  ineq::ineq(x, ...)
+
+}
+
+
+pct_delta <- function(x1, x){
+  (x1 - x) / x * 100
+}
