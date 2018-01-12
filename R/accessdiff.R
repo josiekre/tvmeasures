@@ -86,7 +86,7 @@ access_histogram <- function(x, y, weight_tiff = NULL){
 compute_pctaccess <- function(tiff, weight_tiff = NULL, ...){
 
   values <- raster::getValues(tiff)
-  weights <- get_tweights(tiff)
+  weights <- get_tweights(weight_tiff)
 
   Hmisc::wtd.quantile(x = values, weights = weights, ...)
 }
