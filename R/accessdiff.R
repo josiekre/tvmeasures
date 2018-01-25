@@ -15,22 +15,36 @@
 #' @examples
 #' clifton <- read_tiff(system.file("extdata", "clifton_am_jobs.tiff", package = "tvmeasures"))
 #' base <- read_tiff(system.file("extdata", "base_am_jobs.tiff", package = "tvmeasures"))
-#' diff <- clifton - base
-#' compute_accessdiff(diff)
+#' compute_accessdiff(clifton, base)
 #'
 #'
 #' @export
 #'
 #'
-compute_accessdiff <- function(difference_tiff, weight_tiff = NULL){
+compute_accessdiff <- function(project_tiff, base_tiff, weight_tiff = NULL){
 
   # Get different between project and base
-  values <- raster::getValues(difference_tiff)
+  values <- raster::getValues(project_tiff) - raster::getValues(base_tiff)
 
   # keep only positive accessibility changes
   positivevalues <- values[values > 0]
-  weights <- get_tweights(weight_tiff)[values > 0]
+  weights <- get_tweights(weight_tiff, values)[values > 0]
   stats::weighted.mean(positivevalues, weights)
+
+}
+
+#' Sum an accessibility matrix
+#'
+#' @inheritParams compute_pctaccess
+#'
+#' @export
+#'
+sum_access<- function(tiff, weight_tiff = NULL){
+  # Get different between project and base
+  values <- raster::getValues(tiff)
+  weights <- get_tweights(weight_tiff, values)
+
+  sum(values * weights)
 
 }
 
@@ -38,9 +52,10 @@ compute_accessdiff <- function(difference_tiff, weight_tiff = NULL){
 #' Get weights from a tiff
 #'
 #' @inheritParams compute_accessdiff
+#' @param values
 #'
 #'
-get_tweights <- function(weight_tiff = NULL){
+get_tweights <- function(weight_tiff = NULL, values){
 
   if(is.null(weight_tiff)){
     weights <- rep(1, length(values))
@@ -86,7 +101,7 @@ access_histogram <- function(x, y, weight_tiff = NULL){
 compute_pctaccess <- function(tiff, weight_tiff = NULL, ...){
 
   values <- raster::getValues(tiff)
-  weights <- get_tweights(weight_tiff)
+  weights <- get_tweights(weight_tiff, values)
 
   Hmisc::wtd.quantile(x = values, weights = weights, ...)
 }
@@ -105,11 +120,13 @@ compute_pctaccess <- function(tiff, weight_tiff = NULL, ...){
 #' @importFrom ineq ineq
 #' @importFrom raster getValues
 #'
+#' @export
+#'
 #'
 gini_access <- function(tiff, weight_tiff = NULL, ...){
 
   values <- raster::getValues(tiff)
-  weights <- get_tweights(weight_tiff)
+  weights <- get_tweights(weight_tiff, values)
 
   x <- values * weights
 

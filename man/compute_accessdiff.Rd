@@ -4,15 +4,15 @@
 \alias{compute_accessdiff}
 \title{Compute mean difference in accessibility}
 \usage{
-compute_accessdiff(difference_tiff, weight_tiff = NULL)
+compute_accessdiff(project_tiff, base_tiff, weight_tiff = NULL)
 }
 \arguments{
+\item{weight_tiff}{A Conveyal raster layer containing origin-side
+opportunities to use for weighting.}
+
 \item{difference_tiff}{A Conveyal raster layer containing accessibility
 statistics for a transit system with an added project, differenced from a
 base layer.}
-
-\item{weight_tiff}{A Conveyal raster layer containing origin-side
-opportunities to use for weighting.}
 }
 \description{
 This function computes the average accessibility gain (positive changes
@@ -21,8 +21,7 @@ only), optionally weighted by another statistic.
 \examples{
 clifton <- read_tiff(system.file("extdata", "clifton_am_jobs.tiff", package = "tvmeasures"))
 base <- read_tiff(system.file("extdata", "base_am_jobs.tiff", package = "tvmeasures"))
-diff <- clifton - base
-compute_accessdiff(diff)
+compute_accessdiff(clifton, base)
 
 
 }

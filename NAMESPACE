@@ -2,9 +2,11 @@
 
 export(compute_accessdiff)
 export(compute_pctaccess)
+export(gini_access)
 export(leaflet_raster)
 export(read_project)
 export(read_tiff)
+export(sum_access)
 importFrom(RColorBrewer,brewer.pal)
 importFrom(dplyr,filter)
 importFrom(ineq,ineq)
