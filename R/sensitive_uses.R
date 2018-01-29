@@ -87,6 +87,6 @@ cultenv <- function(project, sensitive_layer, buffer, epsg = NULL){
 
 
   # calculate lengths and divide
-  as.numeric( intersected / sf::st_length(project))
+  as.numeric( sum(intersected) / sf::st_length(project))
 
 }
