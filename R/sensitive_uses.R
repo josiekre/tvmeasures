@@ -19,8 +19,8 @@
 #' @return The percent of the project's alignment lying in sensitive areas
 #'
 #'
-#' @importFrom sf st_geometry_type st_crs st_transform st_buffer st_intersection st_as_sf st_length
-#' @importFrom dplyr filter
+#' @importFrom sf st_geometry_type st_crs st_combine st_transform st_buffer st_intersection st_as_sf st_length
+#' @importFrom dplyr filter select
 #'
 #'
 #' @export
@@ -39,6 +39,8 @@ cultenv <- function(project, sensitive_layer, buffer, epsg = NULL){
   project <- project %>%
     dplyr::filter(sf::st_geometry_type(.$geometry) %in%
                     c("MULTILINESTRING", "LINESTRING")) %>%
+    dplyr::select(geometry) %>%
+    sf::st_as_sf() %>%
     sf::st_transform(epsg)
 
   sensitive_layer <- sensitive_layer %>%
@@ -48,19 +50,21 @@ cultenv <- function(project, sensitive_layer, buffer, epsg = NULL){
   # buffer points and lines
   point_line_types <- c("MULTILINESTRING", "LINESTRING", "POINT", "MULTIPOINT")
   lines_points <- sensitive_layer %>%
-    dplyr::filter(sf::st_geometry_type(.$geometry) %in% point_line_types)
+    dplyr::filter(sf::st_geometry_type(.$geometry) %in% point_line_types) %>%
+    dplyr::select(geometry)
 
   if(nrow(lines_points) > 0){
     lines_points <- lines_points %>%
-    sf::st_as_sf(promote_to_multi = TRUE)  %>%
-    sf::st_buffer(buffer)
+      sf::st_as_sf(promote_to_multi = TRUE)  %>%
+      sf::st_buffer(buffer)
   }
 
 
   # get areas
   area_types <- c("MULTIPOLYGON", "POLYGON")
   areas <- sensitive_layer %>%
-    dplyr::filter(sf::st_geometry_type(.$geometry) %in% area_types)
+    dplyr::filter(sf::st_geometry_type(.$geometry) %in% area_types) %>%
+    dplyr::select(geometry)
 
   if(nrow(areas) > 0){
     areas <- areas %>%
@@ -70,10 +74,19 @@ cultenv <- function(project, sensitive_layer, buffer, epsg = NULL){
   sens_buffs <- rbind(areas, lines_points)
 
   # intersect project with sensitivity buffers
-  intersected <- project %>%
-    sf::st_intersection(sens_buffs)
+
+  intersected <- tryCatch({
+    project %>%
+      sf::st_intersection(sens_buffs) %>%
+      sf::st_combine() %>%
+      sf::st_length()
+
+  }, error = function(e){
+     0
+  })
+
 
   # calculate lengths and divide
-  as.numeric(sf::st_length(intersected) / sf::st_length(project))
+  as.numeric( intersected / sf::st_length(project))
 
 }
