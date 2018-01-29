@@ -2,15 +2,15 @@
 % Please edit documentation in R/asset_mgmt.R
 \name{asset_mgmt}
 \alias{asset_mgmt}
-\title{Compute the Asset Management Statistic}
+\title{Compute the Asset Management measure}
 \usage{
-asset_mgmt(new_pop, new_jobs, service_miles)
+asset_mgmt(pop, jobs, service_miles)
 }
 \arguments{
-\item{new_pop}{The population within 1/2 mile of proposed transit project
+\item{pop}{The population within 1/2 mile of proposed transit project
 stops or stations with new access to transit.}
 
-\item{new_jobs}{The jobs within 1/2 mile of proposed transit project
+\item{jobs}{The jobs within 1/2 mile of proposed transit project
 stops or stations with new access to transit.}
 
 \item{service_miles}{The average weekday service miles of the proposed project.}
@@ -19,5 +19,5 @@ stops or stations with new access to transit.}
 A numeric value of the new access per service mile.
 }
 \description{
-Compute the Asset Management Statistic
+Compute the Asset Management measure
 }
