@@ -115,7 +115,7 @@ compute_pctaccess <- function(tiff, weight_tiff = NULL, ...){
 #' The [Gini coefficient](https://en.wikipedia.org/wiki/Gini_coefficient)
 #' is a measure of inequality usually applied to income. In the case of transit
 #' accessibility, Gini values closer to 1 imply that some areas have
-#' high-quality access while most have none. This serves as a wrapper to \link[ineq][ineq]
+#' high-quality access while most have none. This serves as a wrapper to \link[ineq]{ineq}
 #'
 #' @importFrom ineq ineq
 #' @importFrom raster getValues
