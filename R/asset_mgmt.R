@@ -15,3 +15,18 @@ asset_mgmt <- function(pop, jobs, service_miles) {
   (pop + jobs) / service_miles
 
 }
+
+#' Compute the Land Use Compatibility Measure
+#'
+#' @inheritParams asset_mgmt
+#'
+#' @return A numeric value of the balance between jobs and population within
+#'   1/2 mile of project stations.
+#'
+#' @export
+#'
+landuse_comp <- function(pop, jobs) {
+
+  pmin(jobs, pop) / pmax(jobs, pop)
+
+}
