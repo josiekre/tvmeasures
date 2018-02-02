@@ -30,3 +30,17 @@ landuse_comp <- function(pop, jobs) {
   pmin(jobs, pop) / pmax(jobs, pop)
 
 }
+
+#' Compute the Social Equity Measure
+#'
+#' @param pct_minority The percent of the accessed population that is minority
+#' @param pct_poverty The percent of the accessd population that is under the poverty line
+#'
+#' @export
+#'
+social_equity <- function(pct_minority = 0, pct_poverty = 0){
+
+  # average of minority and poverty
+  pmax(pct_minority, pct_poverty)
+
+}
