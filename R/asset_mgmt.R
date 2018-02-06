@@ -40,7 +40,7 @@ landuse_comp <- function(pop, jobs) {
 #'
 social_equity <- function(pct_minority = 0, pct_poverty = 0){
 
-  # average of minority and poverty
+  # max of minority and poverty
   pmax(pct_minority, pct_poverty)
 
 }
