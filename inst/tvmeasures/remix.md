@@ -1,4 +1,5 @@
-A csv file containing the results of the Remix analysis. The file should have fields with these names:
+Point the file selector below to a CSV file containing the results of the Remix
+analysis. The file should have fields with these names:
   - `project`: The name of the project
   - `population`: The population in the project service area
   - `jobs`: The jobs in the project service area

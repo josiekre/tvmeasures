@@ -26,7 +26,12 @@ shinyUI(fluidPage(
       # remix table with population, jobs, etc
       h3("Remix"),
       includeMarkdown("remix.md"),
-      #fileInput(),
+      fileInput("remix_file", "Choose CSV File",
+                accept = c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv")
+      ),
 
 
       # cultural/environmental shapefile or geojson
@@ -56,7 +61,13 @@ shinyUI(fluidPage(
 
       tabsetPanel(
         type = "tabs",
-        tabPanel("Remix", dataTableOutput("remix_output")),
+
+        tabPanel("Remix",
+                 dataTableOutput("remix_output"),
+                 includeMarkdown("remix_definitions.md")
+                 ),
+
+
         tabPanel("Cultural/Environmental", dataTableOutput("cultural_environmental")),
         tabPanel("Conveyal", dataTableOutput("conveyal_output")),
         tabPanel("Accessibility Map", leafletOutput("raster_output"))

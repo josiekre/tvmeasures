@@ -8,13 +8,43 @@
 #
 
 library(shiny)
+library(tidyverse)
+library(tvmeasures)
 library(leaflet)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
 
 
-  output$remix_output <- renderDataTable(iris)
+  output$remix_output <- renderDataTable({
+
+    if (is.null(input$remix_file)){
+      return (NULL)
+    }
+    inFile <- input$remix_file
+
+
+    tryCatch({
+      d <- read_csv(inFile$datapath) %>%
+        transmute(
+          `Project` = project,
+          `Efficiency` = asset_mgmt(population, jobs, service_miles),
+          `Compatibility` = landuse_comp(population, jobs),
+          `Social Equity` = social_equity(pct_minority, pct_poverty)
+        )
+
+      DT::datatable(d) %>%
+        DT::formatRound(2:3) %>%
+        DT::formatPercentage(4)
+
+
+
+    }, error = function(e){
+      stop(e)
+
+    })
+
+  })
 
   output$cultural_environmental <- renderDataTable(iris)
 
