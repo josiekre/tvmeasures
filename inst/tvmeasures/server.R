@@ -51,7 +51,48 @@ shinyServer(function(input, output) {
 
   output$cultural_environmental <- renderDataTable(iris)
 
-  output$conveyal_output <- renderDataTable(iris)
+  output$conveyal_output <- renderDataTable({
+
+    if (
+      is.null(input$tiffs) |
+      is.null(input$raster_base1) |
+      is.null(input$raster_pop) |
+      is.null(input$raster_eta)){
+      return (NULL)
+    }
+
+    project_files <- input$tiffs$datapath
+    conveyal <- lapply(project_files, function(p){
+      read_tiff(p)
+    })
+
+    names(conveyal) <- tools::file_path_sans_ext(basename(input$tiffs$name))
+
+    # load reference files
+    base_path <- input$raster_base1$datapath
+    base_tiff <- read_tiff(base_path)
+    pop_path  <- input$raster_pop$datapath
+    pop_tiff  <- read_tiff(pop_path)
+    eta_path  <- input$raster_eta$datapath
+    eta_tiff <-  read_tiff(eta_path)
+
+
+    # Run the above function for total- and eta-weighted populations, and
+    # join the results into a single table
+    conveyal_results <- left_join(
+
+      # total population weighted results
+      table_builder(conveyal, base_tiff, pop_tiff, "pop"),
+
+      # eta population weighted results
+      table_builder(conveyal, base_tiff, eta_tiff, "eta"),
+
+      by = "project"
+    )
+
+    conveyal_results
+
+  })
 
 
   # Single project
@@ -60,7 +101,7 @@ shinyServer(function(input, output) {
     if (  # check input files
       is.null(input$raster_project) |
       is.null(input$project_shape) |
-      is.null(input$raster_base)
+      is.null(input$raster_base2)
     ){
 
       # if there is nothing supplied, just show a base map

@@ -24,7 +24,7 @@ shinyUI(fluidPage(
         "independent input files."),
 
       # remix table with population, jobs, etc
-      h3("Remix"),
+      h4("Remix"),
       includeMarkdown("remix.md"),
       fileInput("remix_file", "Choose CSV File",
                 accept = c(
@@ -35,23 +35,26 @@ shinyUI(fluidPage(
 
 
       # cultural/environmental shapefile or geojson
-      h3("Cultural / Environmental"),
+      h4("Cultural / Environmental"),
       includeMarkdown("cultenv.md"),
       #fileInput(),
 
 
       # conveyal rasters
-      h3("Conveyal"),
+      h4("Conveyal"),
       includeMarkdown("conveyal.md"),
-      #fileInput(),
+      fileInput("tiffs", "Choose Conveyal outputs", multiple = TRUE),
+      fileInput("raster_base1", "Choose base layer tiff file"),
+      fileInput("raster_pop", "Choose population weights tiff file"),
+      fileInput("raster_eta", "Choose ETA weights tiff file"),
 
 
       # map
-      h3("Accessibility Map"),
+      h4("Accessibility Map"),
       includeMarkdown("raster.md"),
       fileInput("project_shape", "Choose GeoJson project file"),
       fileInput("raster_project", "Choose project .tiff"),
-      fileInput("raster_base", "Choose base layer .tiff")
+      fileInput("raster_base2", "Choose base layer .tiff")
 
 
 
