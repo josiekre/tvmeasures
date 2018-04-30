@@ -16,7 +16,8 @@
 #'
 #' @export
 #'
-leaflet_raster <- function(raster, project, diff = TRUE, cuts = c(10, 100), base_rail = marta_sf){
+leaflet_raster <- function(raster, project, diff = TRUE, cuts = c(10, 1000),
+                           base_rail = marta_sf){
 
   # get x and y for centering
   bbox_project <- sf::st_bbox(project)
@@ -27,11 +28,13 @@ leaflet_raster <- function(raster, project, diff = TRUE, cuts = c(10, 100), base
   align <- project %>%
     dplyr::filter(
       sf::st_geometry_type(.$geometry) == "MULTILINESTRING" |
-      sf::st_geometry_type(.$geometry) == "LINESTRING")
+      sf::st_geometry_type(.$geometry) == "LINESTRING") %>%
+    sf::st_as_sf()
 
   stops <- project %>%
     dplyr::filter(
       sf::st_geometry_type(.$geometry) == "POINT")  %>%
+    sf::st_as_sf() %>%
     sf::st_cast("POINT")
 
   if(diff){
@@ -67,10 +70,10 @@ leaflet_raster <- function(raster, project, diff = TRUE, cuts = c(10, 100), base
       leaflet::addRasterImage(raster_values, colors = pal, opacity = 0.5) %>%
       leaflet::addPolylines(data = base_rail, label = ~as.character(route_short_name),
                    color = "grey") %>%
-      leaflet::addPolylines(data = align, label = ~as.character(name),
+      leaflet::addPolylines(data = align, label = ~as.character(desc),
                    color = "black") %>%
       leaflet::addCircleMarkers(
-        data = stops, label = ~as.character(name),
+        data = stops, label = ~as.character(desc),
         fillColor = "white", fillOpacity = 0.9,
         color = "black", weight = 2, radius = 5) %>%
       leaflet::addLegend(
@@ -88,9 +91,9 @@ leaflet_raster <- function(raster, project, diff = TRUE, cuts = c(10, 100), base
     leaflet::leaflet() %>%
       leaflet::addProviderTiles("Esri.WorldGrayCanvas") %>%
       leaflet::addRasterImage(raster, colors = pal, opacity = 0.5) %>%
-      leaflet::addPolylines(data = align, label = ~as.character(name), color = "grey") %>%
+      leaflet::addPolylines(data = align, label = ~as.character(desc), color = "grey") %>%
       leaflet::addCircleMarkers(
-        data = stops, label = ~as.character(name),
+        data = stops, label = ~as.character(desc),
         fillColor = "white", fillOpacity = 0.9,
         color = "black", weight = 2, radius = 5) %>%
       leaflet::addLegend(pal = pal, values = values(raster)) %>%

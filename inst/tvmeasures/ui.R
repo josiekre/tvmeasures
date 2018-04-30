@@ -48,9 +48,10 @@ shinyUI(fluidPage(
 
       # map
       h3("Accessibility Map"),
-      includeMarkdown("raster.md")
-      #fileInput(),
-      #fileInput()
+      includeMarkdown("raster.md"),
+      fileInput("project_shape", "Choose GeoJson project file"),
+      fileInput("raster_project", "Choose project .tiff"),
+      fileInput("raster_base", "Choose base layer .tiff")
 
 
 

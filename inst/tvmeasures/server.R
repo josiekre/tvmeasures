@@ -12,10 +12,14 @@ library(tidyverse)
 library(tvmeasures)
 library(leaflet)
 
-# Define server logic required to draw a histogram
 shinyServer(function(input, output) {
 
 
+  # Remix output table
+  #
+  # This returns a datatable with three columns, one for each of the remix-
+  # derived measures.
+  #
   output$remix_output <- renderDataTable({
 
     if (is.null(input$remix_file)){
@@ -38,7 +42,6 @@ shinyServer(function(input, output) {
         DT::formatPercentage(4)
 
 
-
     }, error = function(e){
       stop(e)
 
@@ -50,9 +53,39 @@ shinyServer(function(input, output) {
 
   output$conveyal_output <- renderDataTable(iris)
 
-  map = leaflet() %>% addTiles() %>% setView(-93.65, 42.0285, zoom = 17)
 
-  output$raster_output <- renderLeaflet(map)
+  # Single project
+  output$raster_output <- renderLeaflet({
+
+    if (  # check input files
+      is.null(input$raster_project) |
+      is.null(input$project_shape) |
+      is.null(input$raster_base)
+    ){
+
+      # if there is nothing supplied, just show a base map
+      leaflet() %>%
+        leaflet::addPolylines(data = marta_sf,
+                              label = ~as.character(marta_sf$route_short_name),
+                              color = "grey") %>%
+        addProviderTiles("Esri.WorldGrayCanvas") %>%
+        setView(-84.3880, 33.7490, zoom = 12)
+    } else {
+
+      rasterFile <- input$raster_project
+      pr <- read_tiff(rasterFile$datapath)
+
+      shapeFile <- input$project_shape
+      shp <- read_project(shapeFile$datapath)
+
+      baseRasterFile <- input$raster_base
+      br <- read_tiff(baseRasterFile$datapath)
+
+      leaflet_raster(pr - br, shp, TRUE, cuts = c(10000, 100000))
+
+    }
+
+  })
 
 
 })
