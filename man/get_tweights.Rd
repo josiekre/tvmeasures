@@ -10,7 +10,7 @@ get_tweights(weight_tiff = NULL, values)
 \item{weight_tiff}{A Conveyal raster layer containing origin-side
 opportunities to use for weighting.}
 
-\item{values}{}
+\item{values}{Raster cell values}
 }
 \description{
 Get weights from a tiff

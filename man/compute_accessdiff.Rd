@@ -7,12 +7,14 @@
 compute_accessdiff(project_tiff, base_tiff, weight_tiff = NULL)
 }
 \arguments{
+\item{project_tiff}{A Conveyal raster layer containing accessibility
+statistics for a transit system with an added project}
+
+\item{base_tiff}{A Conveyal raster layer containing accessibility statistics
+for the base transit system.}
+
 \item{weight_tiff}{A Conveyal raster layer containing origin-side
 opportunities to use for weighting.}
-
-\item{difference_tiff}{A Conveyal raster layer containing accessibility
-statistics for a transit system with an added project, differenced from a
-base layer.}
 }
 \description{
 This function computes the average accessibility gain (positive changes

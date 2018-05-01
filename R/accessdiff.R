@@ -3,9 +3,10 @@
 #' This function computes the average accessibility gain (positive changes
 #' only), optionally weighted by another statistic.
 #'
-#' @param difference_tiff A Conveyal raster layer containing accessibility
-#'   statistics for a transit system with an added project, differenced from a
-#'   base layer.
+#' @param project_tiff A Conveyal raster layer containing accessibility
+#'   statistics for a transit system with an added project
+#' @param base_tiff A Conveyal raster layer containing accessibility statistics
+#'   for the base transit system.
 #' @param weight_tiff A Conveyal raster layer containing origin-side
 #'   opportunities to use for weighting.
 #'
@@ -52,7 +53,7 @@ sum_access<- function(tiff, weight_tiff = NULL){
 #' Get weights from a tiff
 #'
 #' @inheritParams compute_accessdiff
-#' @param values
+#' @param values Raster cell values
 #'
 #'
 get_tweights <- function(weight_tiff = NULL, values){
@@ -67,20 +68,6 @@ get_tweights <- function(weight_tiff = NULL, values){
 
 }
 
-
-access_histogram <- function(x, y, weight_tiff = NULL){
-
-  df <- data_frame(
-    cobb = raster::getValues(x),
-    base = raster::getValues(y),
-    weight = get_tweights(weight_tiff)
-  ) %>%
-    mutate(access = cobb - base)
-
-
-  ggplot(df, aes(x = access, weight = weight/ sum(weight))) +
-    geom_density()
-}
 
 
 #' Compute nth percentile accessibility
@@ -119,6 +106,7 @@ compute_pctaccess <- function(tiff, weight_tiff = NULL, ...){
 #'
 #' @importFrom ineq ineq
 #' @importFrom raster getValues
+#' @importFrom methods hasArg
 #'
 #' @export
 #'
@@ -130,7 +118,7 @@ gini_access <- function(tiff, weight_tiff = NULL, ...){
 
   x <- values * weights
 
-  if(!hasArg(type)){
+  if(!methods::hasArg(type)){
     type <- "Gini"
   }
 
@@ -141,4 +129,50 @@ gini_access <- function(tiff, weight_tiff = NULL, ...){
 
 pct_delta <- function(x1, x){
   (x1 - x) / x * 100
+}
+
+
+#' Function to make a Conveyal Results table
+#'
+#' @param results A conveyal regional analysis raster object.
+#' @param base_tiff The base scenario raster object.
+#' @param weight_tiff The raster object with population weights.
+#' @param weight_prefix A character string to designate the type of weighting.
+#' @param probs Vector of percentiles to use to compute accessibility.
+#'
+#' @return A data_frame with the sum, total percent change from base, and
+#'   percentile accessibilities for a given weighting regimen.
+#'
+#' @importFrom stringr str_c
+#' @importFrom purrr map map_dfr map_dbl
+#' @importFrom dplyr ends_with
+#'
+#' @export
+table_builder <- function(results, base_tiff, weight_tiff,
+                          weight_prefix = "",
+                          probs = c(0.7, 0.9)){
+
+  # percentile access
+  results_table <- results %>%
+      purrr::map(~ compute_pctaccess(.x, weight_tiff, probs = probs)) %>%
+      purrr::map_dfr(~ as.data.frame(t(as.matrix(.)))) %>%
+      dplyr::mutate(project = names(results)) %>%
+      dplyr::tbl_df()
+
+  # weighted sum of access as different from Base
+  base_sum <- sum_access(base_tiff, weight_tiff)
+  results_table[["sum"]] <- results %>%
+    purrr::map(~(sum_access(.x, weight_tiff))) %>%
+    purrr::map_dbl(~.x)
+
+  # compute percent change from base
+  results_table[["total_%"]] <- (results_table$sum - base_sum) / base_sum * 100
+
+
+  r <- results_table %>%
+    dplyr::select(project, sum, dplyr::ends_with('%'))
+
+  # change the names by prefixing
+  names(r)[-1] <- stringr::str_c(weight_prefix, names(r)[-1], sep = "_")
+  r
 }
