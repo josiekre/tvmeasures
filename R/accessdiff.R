@@ -155,6 +155,7 @@ pct_delta <- function(x1, x){
 #' @return A data_frame with the sum, total percent change from base, and
 #'   percentile accessibilities for a given weighting regimen.
 #'
+#' @export
 table_builder <- function(results, base_tiff, weight_tiff,
                           weight_prefix = "",
                           probs = c(0.7, 0.9)){
