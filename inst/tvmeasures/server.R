@@ -69,7 +69,7 @@ shinyServer(function(input, output) {
     names(conveyal) <- tools::file_path_sans_ext(basename(input$tiffs$name))
 
     # load reference files
-    base_path <- input$raster_base1$datapath
+    base_path <- input$raster_base$datapath
     base_tiff <- read_tiff(base_path)
     pop_path  <- input$raster_pop$datapath
     pop_tiff  <- read_tiff(pop_path)
@@ -101,7 +101,7 @@ shinyServer(function(input, output) {
     if (  # check input files
       is.null(input$raster_project) |
       is.null(input$project_shape) |
-      is.null(input$raster_base2)
+      is.null(input$raster_base)
     ){
 
       # if there is nothing supplied, just show a base map
