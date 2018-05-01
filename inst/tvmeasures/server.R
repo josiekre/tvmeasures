@@ -20,46 +20,45 @@ shinyServer(function(input, output) {
   # This returns a datatable with three columns, one for each of the remix-
   # derived measures.
   #
-  output$remix_output <- renderDataTable({
+  remix_table <- reactive({
+    validate(
+      need(input$remix_file != "", "Please select a Remix results CSV file")
+    )
 
-    if (is.null(input$remix_file)){
-      return (NULL)
-    }
     inFile <- input$remix_file
 
-
-    tryCatch({
-      d <- read_csv(inFile$datapath) %>%
-        transmute(
-          `Project` = project,
-          `Efficiency` = asset_mgmt(population, jobs, service_miles),
-          `Compatibility` = landuse_comp(population, jobs),
-          `Social Equity` = social_equity(pct_minority, pct_poverty)
-        )
-
-      DT::datatable(d) %>%
-        DT::formatRound(2:3) %>%
-        DT::formatPercentage(4)
-
-
-    }, error = function(e){
-      stop(e)
-
-    })
-
+    read_csv(inFile$datapath) %>%
+      transmute(
+        `Project` = project,
+        `Efficiency` = asset_mgmt(population, jobs, service_miles),
+        `Compatibility` = landuse_comp(population, jobs),
+        `Social Equity` = social_equity(pct_minority, pct_poverty)
+      )
   })
+
+  output$remix_output <- renderDataTable({
+    DT::datatable(remix_table()) %>%
+      DT::formatRound(2:3) %>%
+      DT::formatPercentage(4)
+  })
+
+  output$download_remix <- downloadHandler(
+    filename = function(){"remix_output.csv"},
+    content = function(file){
+      write_csv(remix_table(), file)
+    }
+  )
 
   output$cultural_environmental <- renderDataTable(iris)
 
-  output$conveyal_output <- renderDataTable({
 
-    if (
-      is.null(input$tiffs) |
-      is.null(input$raster_base1) |
-      is.null(input$raster_pop) |
-      is.null(input$raster_eta)){
-      return (NULL)
-    }
+  conveyal_table <- reactive({
+    validate(
+      need(input$tiffs != "", "Please select project tiff files"),
+      need(input$raster_base != "", "Please select a base scenario .tiff file"),
+      need(input$raster_pop  != "", "Please select a population weights tiff file"),
+      need(input$raster_eta  != "", "Please select an ETA-weights tiff file")
+    )
 
     project_files <- input$tiffs$datapath
     conveyal <- lapply(project_files, function(p){
@@ -79,7 +78,7 @@ shinyServer(function(input, output) {
 
     # Run the above function for total- and eta-weighted populations, and
     # join the results into a single table
-    conveyal_results <- left_join(
+    left_join(
 
       # total population weighted results
       table_builder(conveyal, base_tiff, pop_tiff, "pop"),
@@ -88,43 +87,55 @@ shinyServer(function(input, output) {
       table_builder(conveyal, base_tiff, eta_tiff, "eta"),
 
       by = "project"
-    )
+    ) %>%
+      transmute(
+        Project = project,
+        `POP Access` = `pop_total_%`/100,
+        `POP 70` = `pop_70%`,
+        `POP 90` = `pop_90%`,
+        `EQ Access` = `eta_total_%`/100,
+        `EQ 70` = `eta_70%`,
+        `EQ 90` = `eta_90%`
+      )
 
-    conveyal_results
+
 
   })
+
+  output$conveyal_output <- renderDataTable({
+    DT::datatable(conveyal_table()) %>%
+      DT::formatPercentage(c(2,5), digits = 2) %>%
+      DT::formatRound(c(3, 4, 6, 7), digits = 0)
+  })
+
+  output$download_conveyal <- downloadHandler(
+    filename = function(){"conveyal_output.csv"},
+    content = function(file){
+      write_csv(conveyal_table(), file)
+    }
+  )
 
 
   # Single project
   output$raster_output <- renderLeaflet({
+    validate(
+      need(input$raster_project != "", "Please select a project .tiff file"),
+      need(input$project_shape  != "", "Please select a project .geojson shape file"),
+      need(input$raster_base    != "", "Please select a base scenario .tiff file")
+    )
 
-    if (  # check input files
-      is.null(input$raster_project) |
-      is.null(input$project_shape) |
-      is.null(input$raster_base)
-    ){
 
-      # if there is nothing supplied, just show a base map
-      leaflet() %>%
-        leaflet::addPolylines(data = marta_sf,
-                              label = ~as.character(marta_sf$route_short_name),
-                              color = "grey") %>%
-        addProviderTiles("Esri.WorldGrayCanvas") %>%
-        setView(-84.3880, 33.7490, zoom = 12)
-    } else {
+    rasterFile <- input$raster_project
+    pr <- read_tiff(rasterFile$datapath)
 
-      rasterFile <- input$raster_project
-      pr <- read_tiff(rasterFile$datapath)
+    shapeFile <- input$project_shape
+    shp <- read_project(shapeFile$datapath)
 
-      shapeFile <- input$project_shape
-      shp <- read_project(shapeFile$datapath)
+    baseRasterFile <- input$raster_base
+    br <- read_tiff(baseRasterFile$datapath)
 
-      baseRasterFile <- input$raster_base
-      br <- read_tiff(baseRasterFile$datapath)
+    leaflet_raster(pr - br, shp, TRUE, cuts = c(10000, 100000))
 
-      leaflet_raster(pr - br, shp, TRUE, cuts = c(10000, 100000))
-
-    }
 
   })
 

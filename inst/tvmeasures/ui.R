@@ -9,6 +9,7 @@
 
 library(shiny)
 library(leaflet)
+library(DT)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
@@ -21,11 +22,18 @@ shinyUI(fluidPage(
     sidebarPanel(
       p("This application aids ARC staff as they compute the output from",
         "a Concept 3 project evaluation. There are four tabs, each with",
-        "their own independent input files. They also depend on three reference",
-        "files."),
-      fileInput("raster_base", "Choose base layer tiff file"),
+        "their own independent input files. The analysis in the tabs also depend",
+        "on three reference files."),
+      fileInput("raster_base", "Choose base tiff file"),
+      p("The base file represents the existing transit network and must be run",
+        "with the same Conveyal routing engine as the project tiff files."),
+
       fileInput("raster_pop", "Choose population weights tiff file"),
-      fileInput("raster_eta", "Choose ETA weights tiff file")
+      p("The population weights tiff file is available by selecting the 'Jobs total'",
+        "opportunity dataset in Conveyal and pressing 'Generate & Download GeoTIFFs"),
+      fileInput("raster_eta", "Choose ETA weights tiff file"),
+      p("The ETA weights tiff file is available by selecting the 'ETA Zones: eta_pop'",
+        "opportunity dataset in Conveyal and pressing 'Generate & Download GeoTIFFs")
 
 
 
@@ -44,7 +52,9 @@ shinyUI(fluidPage(
                              "text/comma-separated-values,text/plain",
                              ".csv")
                  ),
-                 dataTableOutput("remix_output"),
+                 DTOutput("remix_output"),
+                 br(),
+                 downloadButton("download_remix", label = "Save"),
                  includeMarkdown("remix_definitions.md") ),
 
 
@@ -54,7 +64,14 @@ shinyUI(fluidPage(
         tabPanel("Conveyal",
                  includeMarkdown("conveyal.md"),
                  fileInput("tiffs", "Choose Conveyal outputs", multiple = TRUE),
-                 dataTableOutput("conveyal_output")),
+                 DTOutput("conveyal_output"),
+                 br(),
+                 br(),
+                 br(),
+                 br(),
+                 downloadButton("download_conveyal", label = "Save"),
+                 includeMarkdown("conveyal_definitions.md")
+        ),
 
 
         tabPanel("Accessibility Map",
