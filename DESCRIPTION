@@ -15,4 +15,6 @@ Imports: raster,
     leaflet,
     dplyr,
     RColorBrewer,
-    ineq
+    ineq,
+    rgdal,
+    Hmisc

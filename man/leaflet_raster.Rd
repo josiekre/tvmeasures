@@ -4,7 +4,7 @@
 \alias{leaflet_raster}
 \title{Plot a raster image as a leaflet map}
 \usage{
-leaflet_raster(raster, project, diff = TRUE, cuts = c(10, 1000),
+leaflet_raster(raster, project, diff = TRUE, cuts = c(100, 10000),
   base_rail = marta_sf)
 }
 \arguments{

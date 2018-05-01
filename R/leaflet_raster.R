@@ -12,11 +12,12 @@
 #' @importFrom dplyr filter
 #' @importFrom leaflet colorFactor leaflet addProviderTiles addPolylines
 #'   addRasterImage addCircleMarkers addLegend setView
+#' @importFrom raster values levels cut
 #' @importFrom RColorBrewer brewer.pal
 #'
 #' @export
 #'
-leaflet_raster <- function(raster, project, diff = TRUE, cuts = c(10, 1000),
+leaflet_raster <- function(raster, project, diff = TRUE, cuts = c(100, 10000),
                            base_rail = marta_sf){
 
   # get x and y for centering
@@ -39,12 +40,10 @@ leaflet_raster <- function(raster, project, diff = TRUE, cuts = c(10, 1000),
 
   if(diff){
     # cut raster into bins
-    raster_values <- values(raster)
-
-    raster_values <- cut(
+    raster_values <- raster::cut(
       raster,
       breaks = c(-Inf, -1 * rev(cuts), -1, 1, cuts, Inf)) %>%
-      ratify()
+      raster::ratify()
 
     bin_labels <- c(paste0("< -", cuts[2]),
                     paste0("-", cuts[2], " to -", cuts[1]),
@@ -54,7 +53,7 @@ leaflet_raster <- function(raster, project, diff = TRUE, cuts = c(10, 1000),
                     paste0("> ", cuts[2]))
 
 
-    rat <- levels(raster_values)[[1]]
+    rat <- raster::levels(raster_values)[[1]]
     rat$values <- bin_labels[rat$ID]
 
     levels(raster_values) <- rat
