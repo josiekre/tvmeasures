@@ -60,7 +60,16 @@ shinyUI(fluidPage(
 
         tabPanel("Cultural/Environmental",
                  includeMarkdown("cultenv.md"),
-                 dataTableOutput("cultural_environmental")),
+                 fileInput("cultenv_file",
+                           "Choose Cultural/Environmental shape file"),
+                 DTOutput("cultural_environmental"),
+                 br(),
+                 downloadButton("download_cultenv", label = "Save")
+
+                 ),
+
+
+
         tabPanel("Conveyal",
                  includeMarkdown("conveyal.md"),
                  fileInput("tiffs", "Choose Conveyal outputs", multiple = TRUE),

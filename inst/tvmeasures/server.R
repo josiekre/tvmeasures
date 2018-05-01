@@ -49,7 +49,35 @@ shinyServer(function(input, output) {
     }
   )
 
-  output$cultural_environmental <- renderDataTable(iris)
+  cultenv_table <- reactive({
+    validate(
+      need(input$cultenv_file != "",
+           "Please select a cultural/environmental shape file")
+    )
+
+    ce_file <- input$cultenv_file$datapath
+
+    sf::st_read(ce_file, stringsAsFactors = FALSE) %>%
+      dplyr::group_by(project) %>%
+      dplyr::summarise(
+        cultenv = (sum(SUM) / sum(COUNT)) * sum(Acres)
+      ) %>%
+      dplyr::tbl_df()
+
+
+  })
+
+  output$cultural_environmental <- renderDataTable({
+    DT::datatable(cultenv_table()) %>%
+      DT::formatRound(2, digits = 0)
+  })
+
+  output$download_cultenv <- downloadHandler(
+    filename = function(){"cultenv_output.csv"},
+    content = function(file){
+      write_csv(cultenv_table(), file)
+    }
+  )
 
 
   conveyal_table <- reactive({
