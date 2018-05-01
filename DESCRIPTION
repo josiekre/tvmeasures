@@ -17,4 +17,5 @@ Imports: raster,
     RColorBrewer,
     ineq,
     rgdal,
-    Hmisc
+    Hmisc,
+    shiny
