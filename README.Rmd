@@ -8,7 +8,7 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README-"
+  fig.path = "man/figures/README-"
 )
 ```
 
@@ -46,8 +46,9 @@ functions for multiple projects. Start the application with the following comman
 run_evaluation_app()
 ```
 
-The app will open in Chrome, and it contains its own documentation. 
+The app will open in Chrome, and contains its own documentation. 
 
+<img src="man/figures/app.png" />
 
 The library contains functions to compute the percentile and summed accessibility
 contained in project tiff files written out by Conveyal.

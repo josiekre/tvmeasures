@@ -37,6 +37,8 @@ run_evaluation_app()
 
 The app will open in Chrome, and it contains its own documentation.
 
+<img src="man/figures/app.png" />
+
 The library contains functions to compute the percentile and summed
 accessibility contained in project tiff files written out by
 Conveyal.
