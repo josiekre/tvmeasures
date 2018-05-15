@@ -145,7 +145,8 @@ pct_delta <- function(x1, x){
 #'
 #' @importFrom stringr str_c
 #' @importFrom purrr map map_dfr map_dbl
-#' @importFrom dplyr ends_with
+#' @importFrom tidyr gather spread
+#' @importFrom dplyr ends_with mutate bind_rows transmute tbl_df
 #'
 #' @export
 table_builder <- function(results, base_tiff, weight_tiff,
@@ -153,26 +154,45 @@ table_builder <- function(results, base_tiff, weight_tiff,
                           probs = c(0.7, 0.9)){
 
   # percentile access
-  results_table <- results %>%
-      purrr::map(~ compute_pctaccess(.x, weight_tiff, probs = probs)) %>%
-      purrr::map_dfr(~ as.data.frame(t(as.matrix(.)))) %>%
-      dplyr::mutate(project = names(results)) %>%
-      dplyr::tbl_df()
+  base_pctile <- compute_pctaccess(base_tiff, weight_tiff, probs = probs) %>%
+    dplyr::bind_rows() %>%
+    tidyr::gather(ptile, base)
+
+
+  percentile_results <- results %>%
+    purrr::map(~ compute_pctaccess(.x, weight_tiff, probs = probs)) %>%
+    purrr::map_dfr(~ as.data.frame(t(as.matrix(.)))) %>%
+    dplyr::mutate(project = names(results)) %>%
+    dplyr::tbl_df() %>%
+    tidyr::gather(ptile, value, -project) %>%
+    dplyr::left_join(base_pctile, by = "ptile")
 
   # weighted sum of access as different from Base
   base_sum <- sum_access(base_tiff, weight_tiff)
-  results_table[["sum"]] <- results %>%
+  sum_results  <- results %>%
     purrr::map(~(sum_access(.x, weight_tiff))) %>%
-    purrr::map_dbl(~.x)
+    purrr::map_dbl(~.x) %>%
+    dplyr::bind_rows() %>%
+    tidyr::gather(project, value) %>%
+    dplyr::mutate(ptile = "sum", base = base_sum)
 
-  # compute percent change from base
-  results_table[["total_%"]] <- (results_table$sum - base_sum) / base_sum * 100
 
 
-  r <- results_table %>%
-    dplyr::select(project, sum, dplyr::ends_with('%'))
+  # compute percent change from base, rename fields, and print
+  dplyr::bind_rows(percentile_results, sum_results) %>%
+    dplyr::transmute(
+      Project = project,
+      ptile = factor(
+        ptile,
+        levels = c("70%", "90%", "sum"),
+        labels = c(
+          stringr::str_c("Regional", weight_prefix, "Access", sep = " "),
+          stringr::str_c("70th Percentile", weight_prefix, "Access", sep = " "),
+          stringr::str_c("90th Percentile", weight_prefix, "Access", sep = " ")
+        )
+      ),
+      diff = (value - base) / base * 100
+    ) %>%
+    tidyr::spread(ptile, diff)
 
-  # change the names by prefixing
-  names(r)[-1] <- stringr::str_c(weight_prefix, names(r)[-1], sep = "_")
-  r
 }
