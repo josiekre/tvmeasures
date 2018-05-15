@@ -191,7 +191,7 @@ table_builder <- function(results, base_tiff, weight_tiff,
           stringr::str_c("90th Percentile", weight_prefix, "Access", sep = " ")
         )
       ),
-      diff = (value - base) / base * 100
+      diff = (value - base) / base
     ) %>%
     tidyr::spread(ptile, diff)
 

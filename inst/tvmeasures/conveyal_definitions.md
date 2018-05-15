@@ -3,12 +3,26 @@ depending on the level of service, target populations, and type of jobs. We use
 each of the following measures to get more wide ranging view of a project’s
 expected impact on job access:
 
-  - *POP Access*: Increase in the number of jobs within 45 minutes by transit from all points in the region. Each point is weighted by the total population in the region.
-  - *POP 70*: Jobs accessible via transit by the 70th percentile grid cell, weighted by total population. An indicator of expanding transit to areas with little to know service.
-  - *POP 90*: Jobs accessible via transit by the 90th percentile grid cell, weighted by total population. An indicator of expanding the number of areas with excellent service.
-  - *EQ Access*: Increase in the number of jobs within 45 minutes by transit from all points in the region. Each point is weighted by low-income and non-white population.
-  - *EQ 70*: Jobs accessible via transit by the 70th percentile grid cell, weighted by low-income and non-white population. An indicator of expanding transit to areas with little to know service.
-  - *EQ 90*: Jobs accessible via transit by the 90th percentile grid cell, weighted by low-income and non-white population. An indicator of expanding the number of areas with excellent service.
+Conveyal Analysis splits the region into a grid. For each grid cell in the
+region (which measures about 300m x 300m, or roughly the footprint of a
+stadium), Conveyal Analysis estimates the number of jobs reachable within 45
+minutes by transit using existing service and the additional Concept3 project
+being evaluated. Each measure is weighted both by population, and by Equitable
+Target Area (ETA) population.
+
+| |           Weighted by cell(s) total population.                                                                          | Weighted by cell(s) low-income and non-white population (ETA)                      |
+|-----------------------------------------------------------|----------------------------------------------------------------|------------------------------------------------------------------------------------|
+| Percent increase over existing service for the sum of all grid cells in the region.                                                                          | **Regional Job Access**                                            | **Regional ETA Job Access**        |
+| Percent increase over existing service for the 70th percentile grid cell, a measure for providing transit service to areas with minimal service today.       | **70th Percentile Job Access**                                    | **70th Percentile ETA Job Access**|
+| Percent increase over existing service for the 90th percentile grid cell, a measure for improving existing service in areas with some transit service today. | **90th Percentile Job Access**                                     | **90th Percentile ETA Job Access** |
+
+
+<br/>
+Percentiles are used rather than the mean or median because a person standing
+in a grid cell with access to the mean/median number of jobs cannot reach any
+jobs within 45 minutes by transit. In other words, most of the larger Atlanta
+region has no transit service. We are interested in focusing these metrics on
+the grid cells where transit service is available.
 
 ## Coding projects in Conveyal
 

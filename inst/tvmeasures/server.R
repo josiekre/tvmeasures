@@ -109,31 +109,19 @@ shinyServer(function(input, output) {
     left_join(
 
       # total population weighted results
-      table_builder(conveyal, base_tiff, pop_tiff, "pop"),
+      table_builder(conveyal, base_tiff, pop_tiff, "Jobs"),
 
       # eta population weighted results
-      table_builder(conveyal, base_tiff, eta_tiff, "eta"),
+      table_builder(conveyal, base_tiff, eta_tiff, "ETA Jobs"),
 
-      by = "project"
-    ) %>%
-      transmute(
-        Project = project,
-        `POP Access` = `pop_total_%`/100,
-        `POP 70` = `pop_70%`,
-        `POP 90` = `pop_90%`,
-        `EQ Access` = `eta_total_%`/100,
-        `EQ 70` = `eta_70%`,
-        `EQ 90` = `eta_90%`
-      )
-
-
+      by = "Project"
+    )
 
   })
 
   output$conveyal_output <- renderDataTable({
     DT::datatable(conveyal_table()) %>%
-      DT::formatPercentage(c(2,5), digits = 2) %>%
-      DT::formatRound(c(3, 4, 6, 7), digits = 0)
+      DT::formatPercentage(c(2:7), digits = 2)
   })
 
   output$download_conveyal <- downloadHandler(
